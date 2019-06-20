@@ -1,0 +1,20 @@
+- hosts: haproxy
+  remote_user: root
+  tasks:
+    - name: "Install HAProxy"
+      apt:
+        name: haproxy
+        state: present
+
+    - name: "Copy custom config"
+      template:
+        src: "files/haproxy.cfg"
+        dest: "/etc/haproxy/haproxy.cfg"
+      notify: haproxy-reload
+
+  handlers:
+    - name: haproxy-reload
+      service:
+        name: haproxy
+        state: restarted
+

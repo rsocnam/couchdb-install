@@ -1,0 +1,51 @@
+- hosts: couchdb_cluster
+  remote_user: root
+  tasks:
+    - name: "Add prerequisities"
+      apt:
+        name: apt-transport-https
+        state: present
+
+    - name: "Add APT key"
+      apt_key: 
+        url: https://couchdb.apache.org/repo/bintray-pubkey.asc
+        state: present
+
+    - name: "Add APT repository"
+      apt_repository:
+        repo: "deb https://apache.bintray.com/couchdb-deb stretch main"
+        state: present
+        filename: couchdb
+
+    - name: "Install packages"
+      apt:
+        name: couchdb
+        state: present
+    
+    - name: "Create data directory"
+      file:
+        path: "/mnt/disk2/couchdb"
+        state: directory
+        owner: couchdb
+        group: couchdb
+        mode: 0700
+
+    - name: "Copy custom config"
+      template:
+        src: "files/{{ item }}"
+        dest: "/opt/couchdb/etc/{{ item }}"
+        owner: couchdb
+        group: couchdb
+        mode: 0644
+      with_items:
+        - vm.args
+        - default.ini
+        - local.ini
+      notify: couch-reload
+
+  handlers:
+    - name: couch-reload
+      service:
+        name: couchdb
+        state: restarted
+
