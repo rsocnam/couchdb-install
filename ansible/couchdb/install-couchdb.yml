@@ -43,6 +43,12 @@
         - local.ini
       notify: couch-reload
 
+    - name: "Remove single node config"
+      file:
+        dest: "/opt/couchdb/etc/default.d/5-single-node.ini"
+        state: absent
+      notify: couch-reload
+
   handlers:
     - name: couch-reload
       service:
